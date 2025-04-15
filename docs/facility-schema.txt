@@ -1,0 +1,523 @@
+// backend/src/db/models/Facility.js
+
+/**
+ * Facility Schema for SoberBookings.com
+ * Follows ASAM criteria and supports the hybrid search approach
+ */
+
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
+
+const FacilitySchema = new Schema(
+  {
+    // Basic Information
+    name: {
+      type: String,
+      required: true,
+      index: true
+    },
+    slug: {
+      type: String,
+      required: true,
+      unique: true,
+      index: true
+    },
+    description: {
+      type: String,
+      required: true
+    },
+    address: {
+      street: String,
+      city: {
+        type: String,
+        required: true,
+        index: true
+      },
+      state: {
+        type: String,
+        required: true,
+        index: true
+      },
+      zipCode: {
+        type: String,
+        required: true,
+        index: true
+      },
+      country: {
+        type: String,
+        default: 'US'
+      },
+      location: {
+        type: {
+          type: String,
+          default: 'Point'
+        },
+        coordinates: {
+          type: [Number], // [longitude, latitude]
+          index: '2dsphere'
+        }
+      }
+    },
+    contactInfo: {
+      phone: {
+        type: String,
+        required: true
+      },
+      email: String,
+      website: String,
+      socialMedia: {
+        facebook: String,
+        instagram: String,
+        twitter: String,
+        linkedin: String
+      }
+    },
+    
+    // Treatment Details (ASAM Levels & Specialties)
+    treatmentDetails: {
+      asamLevels: [{
+        type: String,
+        enum: [
+          '0.5', // Early Intervention
+          '1.0', // Outpatient Services
+          '2.1', // Intensive Outpatient Services
+          '2.5', // Partial Hospitalization Services
+          '3.1', // Clinically Managed Low-Intensity Residential Services
+          '3.3', // Clinically Managed Population-Specific High-Intensity Residential Services
+          '3.5', // Clinically Managed High-Intensity Residential Services
+          '3.7', // Medically Monitored Intensive Inpatient Services
+          '4.0'  // Medically Managed Intensive Inpatient Services
+        ],
+        index: true
+      }],
+      specialties: [{
+        type: String,
+        enum: [
+          'Alcohol Addiction',
+          'Drug Addiction',
+          'Opioid Addiction',
+          'Prescription Drug Abuse',
+          'Cocaine Addiction',
+          'Methamphetamine Addiction',
+          'Marijuana Addiction',
+          'Dual Diagnosis',
+          'Mental Health',
+          'Trauma',
+          'PTSD',
+          'Anxiety',
+          'Depression',
+          'Eating Disorders',
+          'Gambling Addiction',
+          'Sex Addiction',
+          'Internet Addiction',
+          'Gaming Addiction',
+          'Other'
+        ],
+        index: true
+      }],
+      services: [{
+        type: String,
+        enum: [
+          'Detoxification',
+          'Medication-Assisted Treatment (MAT)',
+          'Individual Therapy',
+          'Group Therapy',
+          'Family Therapy',
+          'Cognitive Behavioral Therapy (CBT)',
+          'Dialectical Behavior Therapy (DBT)',
+          'Motivational Interviewing',
+          '12-Step Program',
+          'Non-12-Step Program',
+          'Holistic Therapy',
+          'Art Therapy',
+          'Music Therapy',
+          'Exercise/Fitness Program',
+          'Nutrition Counseling',
+          'Mindfulness/Meditation',
+          'Yoga',
+          'Relapse Prevention',
+          'Aftercare Planning',
+          'Sober Living Housing',
+          'Vocational Training',
+          'Educational Support',
+          'Legal Support',
+          'Transportation Services',
+          'Intervention Services',
+          'Alumni Program',
+          'Other'
+        ]
+      }],
+      programLength: {
+        minimum: {
+          value: Number,
+          unit: {
+            type: String,
+            enum: ['days', 'weeks', 'months']
+          }
+        },
+        maximum: {
+          value: Number,
+          unit: {
+            type: String,
+            enum: ['days', 'weeks', 'months']
+          }
+        },
+        average: {
+          value: Number,
+          unit: {
+            type: String,
+            enum: ['days', 'weeks', 'months']
+          }
+        }
+      },
+      approachDescription: String
+    },
+    
+    // Financial & Insurance Information
+    financial: {
+      acceptedInsurance: [{
+        type: String,
+        index: true
+      }],
+      privatePayOptions: {
+        type: Boolean,
+        default: false
+      },
+      slidingScale: {
+        type: Boolean,
+        default: false
+      },
+      financialAid: {
+        type: Boolean,
+        default: false
+      },
+      costRange: {
+        min: Number,
+        max: Number,
+        currency: {
+          type: String,
+          default: 'USD'
+        },
+        period: {
+          type: String,
+          enum: ['day', 'week', 'month', 'program']
+        }
+      }
+    },
+    
+    // Patient Demographics
+    demographics: {
+      ageGroups: [{
+        type: String,
+        enum: ['Adolescent', 'Young Adult', 'Adult', 'Older Adult'],
+        index: true
+      }],
+      genderSpecific: {
+        type: String,
+        enum: ['Male', 'Female', 'Non-binary', 'All'],
+        default: 'All',
+        index: true
+      },
+      specialPopulations: [{
+        type: String,
+        enum: [
+          'LGBTQ+',
+          'Veterans',
+          'Pregnant Women',
+          'HIV/AIDS',
+          'Hearing Impaired',
+          'Visually Impaired',
+          'Physical Disabilities',
+          'Developmental Disabilities',
+          'Professionals',
+          'First Responders',
+          'Religious/Spiritual Focus',
+          'Indigenous/Native American',
+          'Other'
+        ],
+        index: true
+      }]
+    },
+    
+    // Facility Features
+    facilityFeatures: {
+      setting: {
+        type: String,
+        enum: ['Urban', 'Suburban', 'Rural', 'Remote'],
+        index: true
+      },
+      capacity: {
+        total: Number,
+        available: Number
+      },
+      accommodationType: {
+        type: String,
+        enum: ['Private Rooms', 'Shared Rooms', 'Dormitory', 'Apartments', 'Houses']
+      },
+      amenities: [{
+        type: String,
+        enum: [
+          'Private Bathrooms',
+          'Swimming Pool',
+          'Fitness Center',
+          'Outdoor Recreation',
+          'Meditation Garden',
+          'Yoga Studio',
+          'Art Studio',
+          'Music Room',
+          'Chef-Prepared Meals',
+          'Special Dietary Accommodations',
+          'Laundry Services',
+          'WiFi Access',
+          'Computer Lab',
+          'TV/Media Room',
+          'Library',
+          'Private Therapy Offices',
+          'Group Therapy Rooms',
+          'Medical Facilities',
+          'Pharmacy Services',
+          'Transportation Services',
+          'Smoking Areas',
+          'Pet-Friendly',
+          'Other'
+        ]
+      }],
+      accessibility: [{
+        type: String,
+        enum: [
+          'Wheelchair Accessible',
+          'ADA Compliant',
+          'Elevator Access',
+          'Hearing Impaired Accommodations',
+          'Visually Impaired Accommodations',
+          'Other'
+        ]
+      }]
+    },
+    
+    // Verification Information
+    verification: {
+      status: {
+        type: String,
+        enum: ['Unverified', 'Pending', 'Verified', 'Rejected'],
+        default: 'Unverified',
+        index: true
+      },
+      tier: {
+        type: String,
+        enum: ['None', 'Basic', 'Enhanced', 'Premium'],
+        default: 'None',
+        index: true
+      },
+      documents: [{
+        type: {
+          type: String,
+          enum: [
+            'License',
+            'Accreditation',
+            'Insurance',
+            'Staff Credentials',
+            'Facility Photos',
+            'Other'
+          ]
+        },
+        name: String,
+        url: String,
+        verified: Boolean,
+        uploadDate: Date,
+        expirationDate: Date
+      }],
+      verifier: {
+        userId: Schema.Types.ObjectId,
+        name: String,
+        date: Date
+      },
+      lastVerified: Date,
+      notes: String,
+      certifications: [{
+        name: String,
+        issuingBody: String,
+        expirationDate: Date,
+        verified: Boolean
+      }]
+    },
+    
+    // Ratings and Reviews
+    ratings: {
+      overall: {
+        average: {
+          type: Number,
+          min: 0,
+          max: 5,
+          default: 0
+        },
+        count: {
+          type: Number,
+          default: 0
+        }
+      },
+      categories: {
+        staffSupport: {
+          type: Number,
+          min: 0,
+          max: 5,
+          default: 0
+        },
+        accommodations: {
+          type: Number,
+          min: 0,
+          max: 5,
+          default: 0
+        },
+        treatmentEffectiveness: {
+          type: Number,
+          min: 0,
+          max: 5,
+          default: 0
+        },
+        valueForMoney: {
+          type: Number,
+          min: 0,
+          max: 5,
+          default: 0
+        }
+      }
+    },
+    
+    // Success Metrics
+    successMetrics: {
+      completionRate: {
+        type: Number,
+        min: 0,
+        max: 100
+      },
+      sobrietyRate: {
+        sixMonth: {
+          type: Number,
+          min: 0,
+          max: 100
+        },
+        oneYear: {
+          type: Number,
+          min: 0,
+          max: 100
+        }
+      },
+      testimonialCount: {
+        type: Number,
+        default: 0
+      },
+      methodology: String
+    },
+    
+    // Media
+    media: {
+      logo: {
+        url: String,
+        alt: String
+      },
+      photos: [{
+        url: String,
+        caption: String,
+        isPrimary: Boolean
+      }],
+      videos: [{
+        url: String,
+        title: String,
+        description: String
+      }],
+      virtualTour: {
+        url: String,
+        description: String
+      }
+    },
+    
+    // Source information (for the hybrid search system)
+    source: {
+      type: {
+        type: String,
+        enum: ['Database', 'Web', 'API'],
+        default: 'Database'
+      },
+      originalUrl: String,
+      extractedDate: Date,
+      lastUpdated: Date
+    },
+    
+    // System metadata
+    metadata: {
+      createdAt: {
+        type: Date,
+        default: Date.now
+      },
+      updatedAt: {
+        type: Date,
+        default: Date.now
+      },
+      isActive: {
+        type: Boolean,
+        default: true,
+        index: true
+      },
+      isDeleted: {
+        type: Boolean,
+        default: false
+      },
+      searchScore: Number, // Used for search result ranking
+      notionPageId: String // Reference to Notion CMS page
+    }
+  },
+  {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
+  }
+);
+
+// Indexes
+FacilitySchema.index({ 'address.location': '2dsphere' });
+FacilitySchema.index({ name: 'text', description: 'text' });
+
+// Virtual for full address
+FacilitySchema.virtual('fullAddress').get(function() {
+  return `${this.address.street}, ${this.address.city}, ${this.address.state} ${this.address.zipCode}`;
+});
+
+// Method to format facility for search index
+FacilitySchema.methods.formatForSearchIndex = function() {
+  return {
+    objectID: this._id.toString(),
+    name: this.name,
+    description: this.description,
+    address: {
+      street: this.address.street,
+      city: this.address.city,
+      state: this.address.state,
+      zipCode: this.address.zipCode,
+      country: this.address.country
+    },
+    _geoloc: {
+      lat: this.address.location.coordinates[1],
+      lng: this.address.location.coordinates[0]
+    },
+    phone: this.contactInfo.phone,
+    email: this.contactInfo.email,
+    website: this.contactInfo.website,
+    asamLevel: this.treatmentDetails.asamLevels,
+    specialties: this.treatmentDetails.specialties,
+    services: this.treatmentDetails.services,
+    ageGroups: this.demographics.ageGroups,
+    genderSpecific: this.demographics.genderSpecific,
+    specialPopulations: this.demographics.specialPopulations,
+    acceptedInsurance: this.financial.acceptedInsurance,
+    privatePayOptions: this.financial.privatePayOptions,
+    slidingScale: this.financial.slidingScale,
+    verificationStatus: this.verification.status,
+    verificationTier: this.verification.tier,
+    rating: this.ratings.overall.average
+  };
+};
+
+const Facility = mongoose.model('Facility', FacilitySchema);
+
+module.exports = Facility;

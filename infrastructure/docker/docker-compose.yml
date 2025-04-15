@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:14-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: soberbookings
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: ../../
+      dockerfile: infrastructure/docker/Dockerfile.dev
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=development
+      - PORT=5000
+      - DATABASE_URL=postgres://postgres:postgres@postgres:5432/soberbookings
+    volumes:
+      - ../../backend:/app/backend
+      - /app/backend/node_modules
+    depends_on:
+      - postgres
+    command: npm run dev --workspace=backend
+
+  frontend:
+    build:
+      context: ../../
+      dockerfile: infrastructure/docker/Dockerfile.dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - ../../frontend:/app/frontend
+      - /app/frontend/node_modules
+    depends_on:
+      - backend
+    command: npm run dev --workspace=frontend
+    
+  admin-portal:
+    build:
+      context: ../../
+      dockerfile: infrastructure/docker/Dockerfile.dev
+    ports:
+      - "3001:3001"
+    volumes:
+      - ../../admin-portal:/app/admin-portal
+      - /app/admin-portal/node_modules
+    depends_on:
+      - backend
+    command: npm run dev --workspace=admin-portal
+
+volumes:
+  postgres_data: 

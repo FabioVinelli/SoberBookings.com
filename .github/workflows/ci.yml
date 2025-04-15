@@ -1,0 +1,46 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: |
+        cd backend
+        npm ci
+        cd ../frontend
+        npm ci
+        cd ../admin-portal
+        npm ci
+        
+    - name: Run backend tests
+      run: |
+        cd backend
+        npm test
+        
+    - name: Run frontend tests
+      run: |
+        cd frontend
+        npm test
+        
+    - name: Run linter
+      run: |
+        cd backend
+        npm run lint
+        cd ../frontend
+        npm run lint 

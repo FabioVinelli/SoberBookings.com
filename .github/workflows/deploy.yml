@@ -1,0 +1,54 @@
+name: Deploy Pipeline
+
+on:
+  push:
+    branches: [ main ]
+    
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: |
+        cd backend
+        npm ci
+        cd ../frontend
+        npm ci
+        cd ../admin-portal
+        npm ci
+        
+    - name: Build
+      run: |
+        cd backend
+        npm run build
+        cd ../frontend
+        npm run build
+        cd ../admin-portal
+        npm run build
+        
+    - name: Deploy to staging
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      run: |
+        # Add deployment script here
+        echo "Deploying to staging environment"
+        
+    - name: Run integration tests on staging
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      run: |
+        # Add integration tests here
+        echo "Running integration tests on staging"
+        
+    - name: Deploy to production
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      run: |
+        # Add production deployment script here
+        echo "Deploying to production environment" 
