@@ -1,6 +1,7 @@
 # SoberBookings.com
 
-SoberBookings.com is a platform connecting people seeking addiction treatment with appropriate facilities based on their needs, location, and insurance coverage.
+**AI-powered recovery discovery and intake platform.**  
+Connecting people seeking addiction treatment with appropriate facilities based on their needs, location, and insurance coverage.
 
 ## Project Overview
 
@@ -8,12 +9,21 @@ This platform uses a hybrid search approach combining private database and web s
 
 ## Key Features
 
-- Intelligent facility search and matching
-- Insurance verification
-- ASAM criteria-based intake assessment
-- Facility verification system
-- Admin portal for facility management
-- HIPAA-compliant data handling
+- 🧠 Claude-integrated intake chatbot (ASAM criteria-based assessment)
+- 🏥 Intelligent facility search and matching
+- 💲 Insurance verification
+- 🔍 Facility verification system
+- 🖥️ Admin portal for facility management
+- 🔒 HIPAA-compliant data handling
+- 📊 Analytics + patient funnel tracking
+
+## Tech Stack
+
+- Claude Desktop + Notion MCP
+- Node.js with Express for backend
+- Next.js for frontend and admin portal
+- PostgreSQL + Elasticsearch for data storage
+- GitHub Actions for CI/CD
 
 ## Directory Structure
 
@@ -36,7 +46,7 @@ The project follows a monorepo structure:
 
 1. Clone the repository:
    ```
-   git clone https://github.com/yourorganization/soberbookings.git
+   git clone https://github.com/FabioVinelli/SoberBookings.com.git
    cd soberbookings
    ```
 
@@ -75,4 +85,4 @@ This application is designed with HIPAA compliance in mind. All PHI is handled a
 
 ## License
 
-MIT 
+MIT
